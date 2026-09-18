@@ -123,10 +123,10 @@ Configure in `components.json`:
 ## Skill install
 
 ```bash
-npx skills add mblode/blode-icons -g --all -y
+npx skills add mblode/icons -g --all -y
 ```
 
 ## Source
 
-- GitHub: https://github.com/mblode/blode-icons
+- GitHub: https://github.com/mblode/icons
 - npm: https://www.npmjs.com/package/blode-icons-react

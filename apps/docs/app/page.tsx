@@ -12,7 +12,7 @@ export default function Home() {
         Root page only, and the same three crumbs the BreadcrumbList declares.
         The container matches the header and the search bar below it.
       */}
-      <div className="mx-auto w-full max-w-[1400px] px-4 pt-4">
+      <div className="mx-auto w-full max-w-[1100px] px-4 pt-4 sm:px-6 md:px-10">
         <ZoneBreadcrumb product="Blode Icons" />
       </div>
       <App />

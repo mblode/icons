@@ -332,7 +332,7 @@ export default function PhilosophyPage() {
           full source, and the scripts every step above runs, are on{" "}
           <a
             className="text-foreground underline underline-offset-2"
-            href="https://github.com/mblode/blode-icons"
+            href="https://github.com/mblode/icons"
             rel="noopener noreferrer"
             target="_blank"
           >

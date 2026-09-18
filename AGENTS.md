@@ -52,5 +52,5 @@ Uses Ultracite (Oxlint + Oxfmt) for linting and formatting. Run `npm run format`
 `skills/blode-icons-react` guides work on the `blode-icons-react` package: import paths, docs examples, export changes, and release conventions. Install it with:
 
 ```bash
-npx skills add mblode/blode-icons -g --all -y
+npx skills add mblode/icons -g --all -y
 ```

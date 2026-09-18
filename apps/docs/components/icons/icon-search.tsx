@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { IconDrawer, resolveVariant } from "@/components/icons/icon-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,30 +28,21 @@ const COPY_KIND_LABEL: Record<IconCopyKind, string> = {
   TSX: "TSX",
 };
 
-const ICON_SUFFIX_REGEX = /Icon$/;
-const FILLED_SUFFIX = "FilledIcon";
-
 // Module-level cache so toggling style / re-searching never re-fetches an SVG.
 const svgCache = new Map<string, string>();
-
-const resolveVariant = (doc: SearchDoc, style: IconStyle) => {
-  const solid = style === "SOLID" && doc.hasFilled;
-  return {
-    name: solid ? doc.name.replace(ICON_SUFFIX_REGEX, FILLED_SUFFIX) : doc.name,
-    slug: solid ? `${doc.slug}-filled` : doc.slug,
-  };
-};
 
 const IconCell = ({
   doc,
   style,
   markup,
   onCopy,
+  onOpen,
 }: {
   doc: SearchDoc;
   style: IconStyle;
   markup: string | null;
   onCopy: (slug: string, name: string, copyKind: IconCopyKind) => void;
+  onOpen: (doc: SearchDoc) => void;
 }) => {
   const { slug, name } = resolveVariant(doc, style);
   const displayName = getIconDisplayName(name);
@@ -69,6 +61,19 @@ const IconCell = ({
         <a
           className="absolute inset-0 flex items-center justify-center rounded-xl px-2 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
           href={asset(`/${doc.slug}`)}
+          onClick={(event) => {
+            if (
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey ||
+              event.button !== 0
+            ) {
+              return;
+            }
+            event.preventDefault();
+            onOpen(doc);
+          }}
         >
           <span className="sr-only">{displayName}</span>
           {markup ? (
@@ -157,6 +162,8 @@ export const IconSearch = ({
 }) => {
   const [iconStyle, setIconStyle] = useState<IconStyle>("OUTLINE");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selected, setSelected] = useState<SearchDoc | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const searchResults = useMemo(() => searchIcons(searchQuery), [searchQuery]);
   const filteredIcons = useMemo(
@@ -196,10 +203,18 @@ export const IconSearch = ({
 
   const visibleIcons = filteredIcons.slice(0, visibleCount);
 
-  const visibleSlugs = useMemo(
-    () => visibleIcons.map((doc) => resolveVariant(doc, iconStyle).slug),
-    [visibleIcons, iconStyle]
-  );
+  const visibleSlugs = useMemo(() => {
+    const slugs = visibleIcons.map(
+      (doc) => resolveVariant(doc, iconStyle).slug
+    );
+    if (selected) {
+      const extra = resolveVariant(selected, iconStyle).slug;
+      if (!slugs.includes(extra)) {
+        slugs.push(extra);
+      }
+    }
+    return slugs;
+  }, [visibleIcons, iconStyle, selected]);
 
   // Markup that has arrived so far. Seeded from the server payload, so the
   // opening screen paints from the document instead of waiting on the network.
@@ -280,6 +295,31 @@ export const IconSearch = ({
     }
   };
 
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const selectedMarkup = selected
+    ? (markupBySlug.get(resolveVariant(selected, iconStyle).slug) ?? null)
+    : null;
+
   return (
     <>
       {/*
@@ -287,49 +327,44 @@ export const IconSearch = ({
        * reader lands on the search field next, so the heading should name that.
        */}
       <h1 className="sr-only">Search the Blode Icons library</h1>
-      <div className="relative sticky top-0 z-10 mb-4 bg-background py-4">
-        <div className="absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <div className="mx-auto w-full max-w-[1400px] px-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Input
-              autoFocus
-              className="w-full pl-10"
-              leftAddon={
-                <MagnifyingGlassIcon className="absolute top-1/2 left-4 size-4 -translate-y-1/2" />
-              }
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder={`Search all ${filterIconsByStyle(getAllSearchDocs(), iconStyle).length.toLocaleString("en-US")} icons...`}
-              type="text"
-              value={searchQuery}
-            />
-
+      <div className="sticky top-0 z-10 mb-4 bg-background/85 py-4 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 sm:px-6 md:px-10">
+          <Input
+            autoFocus
+            className="w-full rounded-full pl-10"
+            leftAddon={
+              <MagnifyingGlassIcon className="absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+            }
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search icons by name..."
+            ref={searchRef}
+            type="search"
+            value={searchQuery}
+          />
+          <div className="flex items-center gap-3">
             <Tabs
-              className="h-[52px]! w-full sm:w-auto"
               onValueChange={(value) => setIconStyle(value as IconStyle)}
               value={iconStyle}
             >
-              <TabsList className="h-[52px]! w-full rounded-2xl sm:w-auto [&>span]:rounded-xl">
-                <TabsTrigger
-                  className="w-full gap-1 rounded-xl px-4 sm:w-auto"
-                  value="OUTLINE"
-                >
-                  <div className="size-2 rounded-full border border-foreground" />
-                  Line
+              <TabsList className="h-10 rounded-full">
+                <TabsTrigger className="rounded-full px-4" value="OUTLINE">
+                  Outline
                 </TabsTrigger>
-                <TabsTrigger
-                  className="w-full gap-1 rounded-xl px-4 sm:w-auto"
-                  value="SOLID"
-                >
-                  <div className="size-2 rounded-full border border-foreground bg-foreground" />
-                  Solid
+                <TabsTrigger className="rounded-full px-4" value="SOLID">
+                  Filled
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+            <p className="hidden text-muted-foreground text-xs sm:block">
+              {iconStyle === "SOLID"
+                ? "Only icons with a filled variant."
+                : `Press / to search. ${filterIconsByStyle(getAllSearchDocs(), iconStyle).length.toLocaleString("en-US")} icons.`}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1400px] px-4 pb-12">
+      <div className="mx-auto w-full max-w-[1100px] px-4 pb-12 sm:px-6 md:px-10">
         <div className="grid grid-cols-2 gap-2 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {visibleIcons.map((doc) => (
             <IconCell
@@ -339,6 +374,7 @@ export const IconSearch = ({
                 markupBySlug.get(resolveVariant(doc, iconStyle).slug) ?? null
               }
               onCopy={handleIconCopy}
+              onOpen={setSelected}
               style={iconStyle}
             />
           ))}
@@ -347,6 +383,16 @@ export const IconSearch = ({
           <div aria-hidden className="h-px w-full" ref={sentinelRef} />
         ) : null}
       </div>
+      {selected ? (
+        <IconDrawer
+          doc={selected}
+          markup={selectedMarkup}
+          onClose={() => setSelected(null)}
+          onCopyName={(slug, name) => handleIconCopy(slug, name, "NAME")}
+          onStyleChange={setIconStyle}
+          style={iconStyle}
+        />
+      ) : null}
     </>
   );
 };

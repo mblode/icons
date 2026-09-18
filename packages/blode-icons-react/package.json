@@ -14,13 +14,13 @@
   ],
   "homepage": "https://blode.co/icons",
   "bugs": {
-    "url": "https://github.com/mblode/blode-icons/issues"
+    "url": "https://github.com/mblode/icons/issues"
   },
   "license": "MIT",
   "author": "Matthew Blode",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mblode/blode-icons.git",
+    "url": "git+https://github.com/mblode/icons.git",
     "directory": "packages/blode-icons-react"
   },
   "files": [

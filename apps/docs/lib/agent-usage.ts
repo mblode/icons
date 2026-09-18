@@ -15,7 +15,7 @@ npm install blode-icons-react
 Optional skill:
 
 \`\`\`bash
-npx skills add mblode/blode-icons -g --all -y
+npx skills add mblode/icons -g --all -y
 \`\`\`
 
 ## Workflow

@@ -36,7 +36,7 @@ Props match lucide-react: size, color, strokeWidth, absoluteStrokeWidth.
 
 For agents:
 - MCP: https://blode.co/icons/mcp (tools: search_icons, get_icon, get_usage)
-- Skill: npx skills add mblode/blode-icons -g --all -y
+- Skill: npx skills add mblode/icons -g --all -y
 - Summary: https://blode.co/icons/llms.txt
 
 APIs are public — no auth. Prefer npm install over copying source.`;
@@ -114,7 +114,7 @@ export function GettingStarted() {
             <p>
               Or install the skill:{" "}
               <code className="text-foreground">
-                npx skills add mblode/blode-icons -g --all -y
+                npx skills add mblode/icons -g --all -y
               </code>
               . More in{" "}
               <a

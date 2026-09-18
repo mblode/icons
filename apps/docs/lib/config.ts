@@ -9,7 +9,7 @@ export const siteUrl = `https://blode.co${basePath}`;
 export const siteConfig = {
   links: {
     author: "https://blode.co",
-    github: "https://github.com/mblode/blode-icons",
+    github: "https://github.com/mblode/icons",
   },
   version: packageJson.version,
 };

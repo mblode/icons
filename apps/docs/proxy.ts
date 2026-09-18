@@ -19,7 +19,7 @@ library. Every icon ships as a tree-shakeable React component with both
 outline and filled variants.
 
 - Site: ${siteUrl}
-- Source: https://github.com/mblode/blode-icons
+- Source: https://github.com/mblode/icons
 - Package: \`blode-icons-react\` on npm
 
 ## Installation
@@ -78,7 +78,7 @@ Props match lucide-react: \`size\`, \`color\`, \`strokeWidth\`, \`absoluteStroke
 MCP: ${siteUrl}/mcp — \`search_icons\` → \`get_icon\`
 
 \`\`\`bash
-npx skills add mblode/blode-icons -g --all -y
+npx skills add mblode/icons -g --all -y
 \`\`\`
 
 - ${siteUrl}/llms.txt

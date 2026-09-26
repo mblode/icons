@@ -378,10 +378,20 @@ export const IconSearch = ({
        */}
       <h1 className="sr-only">Search the Blode Icons library</h1>
       <div className="sticky top-0 z-10 mb-4 bg-background/85 py-4 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 sm:px-6 md:px-10">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 sm:flex-row sm:items-center sm:px-6 md:px-10">
+          {/*
+            The browser's own search cancel button is hidden: it draws in the
+            platform accent (blue in Safari) and ignores the theme. `clearable`
+            puts the design system's muted clear in the same spot.
+          */}
           <Input
             autoFocus
-            className="w-full rounded-full pl-10"
+            className="w-full rounded-full pl-10 [&::-webkit-search-cancel-button]:appearance-none"
+            clearable
+            onClear={() => {
+              setSearchQuery("");
+              searchRef.current?.focus();
+            }}
             leftAddon={
               <MagnifyingGlassIcon className="absolute top-1/2 left-4 size-4 -translate-y-1/2" />
             }
@@ -391,21 +401,25 @@ export const IconSearch = ({
             type="search"
             value={searchQuery}
           />
-          <div className="flex items-center gap-3">
-            <Tabs
-              onValueChange={(value) => setIconStyle(value as IconStyle)}
-              value={iconStyle}
-            >
-              <TabsList className="h-10 rounded-full">
-                <TabsTrigger className="rounded-full px-4" value="OUTLINE">
-                  Outline
-                </TabsTrigger>
-                <TabsTrigger className="rounded-full px-4" value="SOLID">
-                  Filled
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          {/*
+            Same row and height as the search field, as it was before the
+            Noto-style port. `group-data-horizontal/tabs:` is needed to beat the
+            list's own default height, which a plain `h-*` loses to.
+          */}
+          <Tabs
+            className="shrink-0"
+            onValueChange={(value) => setIconStyle(value as IconStyle)}
+            value={iconStyle}
+          >
+            <TabsList className="w-full rounded-full p-1 group-data-horizontal/tabs:h-[52px] sm:w-auto">
+              <TabsTrigger className="rounded-full px-5" value="OUTLINE">
+                Outline
+              </TabsTrigger>
+              <TabsTrigger className="rounded-full px-5" value="SOLID">
+                Filled
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
@@ -440,7 +454,6 @@ export const IconSearch = ({
       <Suspense fallback={null}>
         <IconPanelFromUrl
           markupBySlug={markupBySlug}
-          onCopyName={(slug, name) => handleIconCopy(slug, name, "NAME")}
           onStyleChange={setIconStyle}
           style={iconStyle}
         />

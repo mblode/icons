@@ -52,6 +52,7 @@ function TabsList({
 }: ComponentProps<typeof TabsPrimitive.List> &
   VariantProps<typeof tabsListVariants>) {
   const [indicatorStyle, setIndicatorStyle] = useState({
+    borderRadius: "",
     height: 0,
     left: 0,
     top: 0,
@@ -63,6 +64,9 @@ function TabsList({
   const { listRef } = useTabObserver({
     onActiveTabChange: (_, activeTab) => {
       setIndicatorStyle({
+        // The indicator sits exactly over the active tab, so it takes the
+        // tab's radius: a pill list gets a pill, not an 8px box inside it.
+        borderRadius: getComputedStyle(activeTab).borderRadius,
         height: activeTab.offsetHeight,
         left: activeTab.offsetLeft,
         top: activeTab.offsetTop,
@@ -94,13 +98,14 @@ function TabsList({
         <span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute top-0 left-0 z-0 rounded-md bg-background shadow-sm",
+            "pointer-events-none absolute top-0 left-0 z-0 bg-background shadow-sm",
             canAnimateIndicator
               ? "transition-[width,height,transform,opacity] duration-300"
               : "transition-none",
             hasIndicatorPosition ? "opacity-100" : "opacity-0"
           )}
           style={{
+            borderRadius: indicatorStyle.borderRadius || undefined,
             height: `${indicatorStyle.height}px`,
             transform: `translate(${indicatorStyle.left}px, ${indicatorStyle.top}px)`,
             transitionTimingFunction: "cubic-bezier(0.65, 0, 0.35, 1)",

@@ -17,8 +17,10 @@ import {
 } from "@/lib/icon-search";
 import { loadIconSource, loadIconSvgBatch } from "@/lib/icon-source";
 import type { IconStyle, SearchDoc } from "@/lib/icon-types";
+import { cn } from "@/lib/utils";
 import ArrowInboxIcon from "@/src/icons-tsx/arrow-inbox";
-import CircleXIcon from "@/src/icons-tsx/circle-x";
+import CheckIcon from "@/src/icons-tsx/check";
+import XIcon from "@/src/icons-tsx/x";
 
 const ICON_SUFFIX_REGEX = /Icon$/;
 const FILLED_SUFFIX = "FilledIcon";
@@ -31,11 +33,45 @@ export const resolveVariant = (doc: SearchDoc, style: IconStyle) => {
   };
 };
 
+const COPIED_RESET_MS = 1500;
+
+const SWAP =
+  "col-start-1 row-start-1 flex items-center justify-center gap-1 transition-[opacity,scale,filter] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
+const SWAP_HIDDEN = "scale-75 opacity-0 blur-[2px]";
+
+/**
+ * A copy button's label that turns into a check once the copy lands, so the
+ * confirmation shows on the control that was pressed instead of in a toast
+ * across the screen. Both labels share one grid cell, which keeps the button
+ * at the wider of the two widths: the row never reflows while it is showing.
+ */
+function CopyLabel({
+  children,
+  copied,
+}: {
+  children: React.ReactNode;
+  copied: boolean;
+}) {
+  return (
+    <span className="inline-grid">
+      <span aria-hidden={copied} className={cn(SWAP, copied && SWAP_HIDDEN)}>
+        {children}
+      </span>
+      <span aria-hidden={!copied} className={cn(SWAP, !copied && SWAP_HIDDEN)}>
+        <CheckIcon aria-hidden="true" />
+        Copied
+      </span>
+    </span>
+  );
+}
+
 function Snippet({
+  copied,
   label,
   onCopy,
   value,
 }: {
+  copied: boolean;
   label: string;
   onCopy: () => void;
   value: string;
@@ -45,7 +81,7 @@ function Snippet({
       <div className="mb-1 flex items-center justify-between gap-2">
         <p className="text-muted-foreground text-xs">{label}</p>
         <Button onClick={onCopy} size="xs" variant="ghost">
-          Copy
+          <CopyLabel copied={copied}>Copy</CopyLabel>
         </Button>
       </div>
       <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-xl bg-muted/50 p-3 font-mono text-xs">
@@ -59,14 +95,12 @@ export function IconDrawer({
   doc,
   markup,
   onClose,
-  onCopyName,
   onStyleChange,
   style,
 }: {
   doc: SearchDoc;
   markup: string | null;
   onClose: () => void;
-  onCopyName: (slug: string, name: string) => void;
   onStyleChange: (style: IconStyle) => void;
   style: IconStyle;
 }) {
@@ -86,31 +120,52 @@ export function IconDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const copyText = async (label: string, value: string) => {
+  // Which button last copied successfully. Keyed by slug too, so switching
+  // icons or styles never shows a check for a copy of something else.
+  const [copied, setCopied] = useState<{ key: string; slug: string } | null>(
+    null
+  );
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+    const timer = setTimeout(() => setCopied(null), COPIED_RESET_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  const isCopied = (key: string) => copied?.key === key && copied.slug === slug;
+
+  // Failures still toast: there is no success state on the button to show,
+  // and the reason matters more than where the eye is.
+  const copyText = async (key: string, value: string) => {
     try {
-      await copyIconContent(value, `copy-${label}`, "icon-drawer", slug);
-      toast(`${label} copied to clipboard`);
+      await copyIconContent(value, `copy-${key}`, "icon-drawer", slug);
+      setCopied({ key, slug });
     } catch {
-      toast.error(`Failed to copy ${label}`);
+      toast.error(`Failed to copy ${key}`);
     }
   };
 
+  // The fetch is handed to the clipboard still pending, as the grid does:
+  // awaiting it first outlives the tap, and Safari then rejects the write.
   const copySource = async (copyKind: "SVG" | "TSX") => {
-    try {
-      const value = await loadIconSource({ copyKind, iconName: slug });
-      if (!value) {
-        toast.error(`No ${copyKind} for ${displayName}`);
-        return;
+    const source = loadIconSource({ copyKind, iconName: slug }).then(
+      (value) => {
+        if (!value) {
+          throw new Error(`No ${copyKind} for ${displayName}`);
+        }
+        return value;
       }
+    );
+    try {
       await copyIconContent(
-        value,
+        source,
         `copy-${copyKind.toLowerCase()}`,
         "icon-drawer",
         slug
       );
-      toast(`${displayName} ${copyKind} copied to clipboard`);
+      setCopied({ key: copyKind, slug });
     } catch {
-      toast.error(`Failed to copy ${copyKind}`);
+      toast.error(`Failed to copy ${displayName} ${copyKind}`);
     }
   };
 
@@ -142,7 +197,7 @@ export function IconDrawer({
             size="icon"
             variant="ghost"
           >
-            <CircleXIcon className="size-4" />
+            <XIcon className="size-4" />
           </Button>
         </div>
 
@@ -175,17 +230,17 @@ export function IconDrawer({
 
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => copySource("SVG")} size="sm" variant="outline">
-            Copy SVG
+            <CopyLabel copied={isCopied("SVG")}>Copy SVG</CopyLabel>
           </Button>
           <Button onClick={() => copySource("TSX")} size="sm" variant="outline">
-            Copy TSX
+            <CopyLabel copied={isCopied("TSX")}>Copy TSX</CopyLabel>
           </Button>
           <Button
-            onClick={() => onCopyName(slug, name)}
+            onClick={() => copyText("name", name)}
             size="sm"
             variant="outline"
           >
-            Copy name
+            <CopyLabel copied={isCopied("name")}>Copy name</CopyLabel>
           </Button>
           <Button
             disabled={!markup}
@@ -200,11 +255,13 @@ export function IconDrawer({
 
         <div className="space-y-3">
           <Snippet
+            copied={isCopied("import")}
             label="Import"
             onCopy={() => copyText("import", importSnippet)}
             value={importSnippet}
           />
           <Snippet
+            copied={isCopied("deep-import")}
             label="Deep import"
             onCopy={() => copyText("deep-import", deepImport)}
             value={deepImport}
@@ -234,12 +291,10 @@ const docBySlug = new Map(getAllSearchDocs().map((doc) => [doc.slug, doc]));
  */
 export function IconPanelFromUrl({
   markupBySlug,
-  onCopyName,
   onStyleChange,
   style,
 }: {
   markupBySlug: Map<string, string>;
-  onCopyName: (slug: string, name: string) => void;
   onStyleChange: (style: IconStyle) => void;
   style: IconStyle;
 }) {
@@ -290,7 +345,6 @@ export function IconPanelFromUrl({
       doc={doc}
       markup={cached ?? (fetched?.slug === slug ? fetched.markup : null)}
       onClose={closeIconPanel}
-      onCopyName={onCopyName}
       onStyleChange={onStyleChange}
       style={style}
     />

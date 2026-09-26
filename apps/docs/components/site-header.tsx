@@ -3,17 +3,18 @@
 import { usePathname } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LogoIcon } from "@/components/ui/logo-icon";
 import { asset, basePath, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
+const DOC_PATHS = ["/installation", "/philosophy", "/concepts"];
+
 export function SiteHeader() {
   const pathname = usePathname();
-  const onIcons = pathname === "/" || pathname === "";
-  const onDocs =
-    pathname.startsWith("/installation") ||
-    pathname.startsWith("/philosophy") ||
-    pathname.startsWith("/concepts");
+  const onDocs = DOC_PATHS.some((path) => pathname.startsWith(path));
+  // Everything that is not a docs page is the icon grid, with or without a
+  // panel open. Matching `/` exactly missed the zone root whenever the path
+  // arrived as the empty string or with a trailing slash behind the rewrite.
+  const onIcons = !onDocs;
 
   return (
     <header className="mx-auto flex w-full max-w-[1100px] items-center justify-between gap-3 px-4 pt-5 sm:px-6 md:px-10">
@@ -22,13 +23,7 @@ export function SiteHeader() {
         `next/link`. Without `basePath`/`asset()` these escape the /icons zone
         and hit blode.co itself — `/installation` there is a 404.
       */}
-      <a
-        className="inline-flex items-center gap-2.5 font-medium text-lg tracking-tight"
-        href={basePath}
-      >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-foreground">
-          <LogoIcon aria-hidden="true" className="size-5" />
-        </span>
+      <a className="font-medium text-lg tracking-tight" href={basePath}>
         Blode Icons
       </a>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -61,12 +56,6 @@ export function SiteHeader() {
             Documentation
           </a>
         </nav>
-        <a
-          className="hidden text-muted-foreground text-sm underline-offset-2 hover:text-foreground hover:underline sm:inline"
-          href={asset("/categories")}
-        >
-          Categories
-        </a>
         <a
           className="hidden text-muted-foreground text-sm underline-offset-2 hover:text-foreground hover:underline md:inline"
           href={siteConfig.links.github}

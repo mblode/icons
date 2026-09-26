@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { IconGlyph } from "@/components/icons/icon-glyph";
-import { asset, siteUrl } from "@/lib/config";
+import { asset, iconHref, siteUrl } from "@/lib/config";
 import { getConceptsTable } from "@/lib/icon-concepts";
 import { getIconSvgs } from "@/lib/icon-detail";
 import { getIconDisplayName } from "@/lib/icon-search";
@@ -62,7 +62,7 @@ export default async function ConceptsPage() {
             <code>search</code> already finds{" "}
             <a
               className="underline underline-offset-2"
-              href={asset("/magnifying-glass")}
+              href={iconHref("magnifying-glass")}
             >
               magnifying glass
             </a>
@@ -84,7 +84,7 @@ export default async function ConceptsPage() {
               >
                 <a
                   className="flex items-center gap-4 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
-                  href={asset(`/${entry.slug}`)}
+                  href={iconHref(entry.slug)}
                 >
                   <IconGlyph markup={markupBySlug[entry.slug] ?? null} />
                   <span className="min-w-0 flex-1">

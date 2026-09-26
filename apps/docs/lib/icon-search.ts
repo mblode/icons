@@ -113,32 +113,50 @@ function tokenMatches(query: string): SearchDoc[] {
   );
 }
 
+const dedupe = (lists: SearchDoc[][], seen = new Set<string>()) => {
+  const out: SearchDoc[] = [];
+  for (const item of lists.flat()) {
+    if (seen.has(item.slug)) {
+      continue;
+    }
+    seen.add(item.slug);
+    out.push(item);
+  }
+  return out;
+};
+
+/**
+ * The lexical ranker in its two tiers: `strong` is exact slug/alias/title then
+ * all-tokens, `fuzzy` is Fuse. The grid slots semantic matches between them,
+ * because a meaning match beats a typo-distance one but never an exact one.
+ */
+export const searchIconTiers = (
+  query: string
+): { fuzzy: SearchDoc[]; strong: SearchDoc[] } => {
+  const normalized = normalizeQuery(query);
+  if (!normalized) {
+    return { fuzzy: [], strong: docs };
+  }
+
+  const seen = new Set<string>();
+  const strong = dedupe(
+    [exactMatches(normalized), tokenMatches(normalized)],
+    seen
+  );
+  const fuzzy = dedupe(
+    [fuse.search(normalized).map((result) => result.item)],
+    seen
+  );
+  return { fuzzy, strong };
+};
+
 /**
  * Hybrid ranker: exact slug/alias/title → all-tokens match → Fuse fuzzy.
  * Same function powers the docs UI, REST search, and MCP tools.
  */
 export const searchIcons = (query: string, limit?: number): SearchDoc[] => {
-  const normalized = normalizeQuery(query);
-  if (!normalized) {
-    return typeof limit === "number" ? docs.slice(0, limit) : docs;
-  }
-
-  const seen = new Set<string>();
-  const ranked: SearchDoc[] = [];
-
-  const pushAll = (items: SearchDoc[]) => {
-    for (const item of items) {
-      if (seen.has(item.slug)) {
-        continue;
-      }
-      seen.add(item.slug);
-      ranked.push(item);
-    }
-  };
-
-  pushAll(exactMatches(normalized));
-  pushAll(tokenMatches(normalized));
-  pushAll(fuse.search(normalized).map((result) => result.item));
+  const { fuzzy, strong } = searchIconTiers(query);
+  const ranked = [...strong, ...fuzzy];
 
   if (typeof limit === "number") {
     return ranked.slice(0, Math.max(0, limit));

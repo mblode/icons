@@ -1,25 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { IconDrawer, resolveVariant } from "@/components/icons/icon-drawer";
+import {
+  IconPanelFromUrl,
+  resolveVariant,
+} from "@/components/icons/icon-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { asset } from "@/lib/config";
+import { asset, iconHref } from "@/lib/config";
 import { copyIconContent } from "@/lib/conversion-events";
-import { downloadSvg } from "@/lib/icon-download";
 import { PAGE_SIZE } from "@/lib/icon-grid";
+import { openIconPanel } from "@/lib/icon-panel-url";
 import {
   filterIconsByStyle,
   getAllSearchDocs,
   getIconDisplayName,
-  searchIcons,
+  searchIconTiers,
 } from "@/lib/icon-search";
 import { loadIconSource, loadIconSvgBatch } from "@/lib/icon-source";
 import type { IconCopyKind, IconStyle, SearchDoc } from "@/lib/icon-types";
-import ArrowDownWallIcon from "@/src/icons-tsx/arrow-down-wall";
 import MagnifyingGlassIcon from "@/src/icons-tsx/magnifying-glass";
 
 const COPY_KIND_LABEL: Record<IconCopyKind, string> = {
@@ -31,18 +33,72 @@ const COPY_KIND_LABEL: Record<IconCopyKind, string> = {
 // Module-level cache so toggling style / re-searching never re-fetches an SVG.
 const svgCache = new Map<string, string>();
 
+const docBySlug = new Map(getAllSearchDocs().map((doc) => [doc.slug, doc]));
+
+// Below three characters a query is still a prefix being typed, and the
+// lexical pass already covers it. The debounce keeps one request per pause
+// rather than one per keystroke; each request spends model tokens.
+const SEMANTIC_MIN_LENGTH = 3;
+const SEMANTIC_DEBOUNCE_MS = 350;
+
+/**
+ * Icons that match the query by meaning, from `/api/icons/semantic`. Lowercased
+ * before the request so "Happy" and "happy" share one edge-cached answer. Any
+ * failure settles to no matches: the lexical results are already on screen.
+ */
+const useSemanticMatches = (query: string) => {
+  const normalized = query.trim().replaceAll(/\s+/g, " ").toLowerCase();
+  const eligible = normalized.length >= SEMANTIC_MIN_LENGTH;
+  const [settled, setSettled] = useState({ query: "", slugs: [] as string[] });
+
+  useEffect(() => {
+    if (!eligible) {
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      let slugs: string[] = [];
+      try {
+        const response = await fetch(
+          asset(`/api/icons/semantic?q=${encodeURIComponent(normalized)}`),
+          { signal: controller.signal }
+        );
+        if (response.ok) {
+          ({ results: slugs } = (await response.json()) as {
+            results: string[];
+          });
+        }
+      } catch {
+        if (controller.signal.aborted) {
+          return;
+        }
+      }
+      setSettled({ query: normalized, slugs });
+    }, SEMANTIC_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [eligible, normalized]);
+
+  const current = eligible && settled.query === normalized;
+  return {
+    pending: eligible && !current,
+    slugs: current ? settled.slugs : [],
+  };
+};
+
 const IconCell = ({
   doc,
   style,
   markup,
   onCopy,
-  onOpen,
 }: {
   doc: SearchDoc;
   style: IconStyle;
   markup: string | null;
   onCopy: (slug: string, name: string, copyKind: IconCopyKind) => void;
-  onOpen: (doc: SearchDoc) => void;
 }) => {
   const { slug, name } = resolveVariant(doc, style);
   const displayName = getIconDisplayName(name);
@@ -51,16 +107,16 @@ const IconCell = ({
     <div>
       <div className="group relative h-[104px] overflow-hidden rounded-xl border border-border [contain-intrinsic-size:104px] [content-visibility:auto]">
         {/*
-          The glyph is a link to the icon's own page, where it is shown at
-          every size with its category, tags, aliases and import line. The
-          copy buttons sit on top of it, so a click on one never falls through
-          to the link. Raw anchor rather than next/link: the grid can hold
-          2,000 cells, and prefetching every visible one is a request storm
-          for pages nobody may open.
+          The glyph links to the grid with this icon's panel open. A plain
+          click opens it in place with a shallow URL update; a modified click
+          still gets a real href, so a new tab lands on the same panel. The
+          copy buttons sit on top, so a click on one never falls through.
+          Raw anchor rather than next/link: the grid can hold 2,000 cells, and
+          prefetching every visible one is a request storm.
         */}
         <a
           className="absolute inset-0 flex items-center justify-center rounded-xl px-2 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
-          href={asset(`/${doc.slug}`)}
+          href={iconHref(doc.slug)}
           onClick={(event) => {
             if (
               event.metaKey ||
@@ -72,7 +128,7 @@ const IconCell = ({
               return;
             }
             event.preventDefault();
-            onOpen(doc);
+            openIconPanel(doc.slug);
           }}
         >
           <span className="sr-only">{displayName}</span>
@@ -101,8 +157,8 @@ const IconCell = ({
           cell, which is why copying an icon there meant hitting a button you
           could not see. `display: none` takes it out of the tap target, the tab
           order and the a11y tree together, leaving the whole cell as the link
-          to the icon's page, where the same four actions are always visible at
-          a size worth aiming at.
+          to the icon's panel, where the same actions are always visible at a
+          size worth aiming at.
         */}
         <div className="absolute inset-x-0 bottom-0 flex gap-1 bg-gradient-to-t from-background via-background/95 to-transparent p-1.5 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:hidden">
           <Button
@@ -129,21 +185,6 @@ const IconCell = ({
           >
             Name
           </Button>
-          {/*
-            The markup is already in memory for the cell, so the download costs
-            no request. Disabled until it arrives rather than saving an empty
-            file.
-          */}
-          <Button
-            aria-label={`Download ${displayName} SVG`}
-            className="shrink-0 cursor-pointer"
-            disabled={!markup}
-            onClick={() => markup && downloadSvg(slug, markup)}
-            size="icon-sm"
-            variant="secondary"
-          >
-            <ArrowDownWallIcon className="size-3.5" />
-          </Button>
         </div>
       </div>
 
@@ -162,13 +203,34 @@ export const IconSearch = ({
 }) => {
   const [iconStyle, setIconStyle] = useState<IconStyle>("OUTLINE");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selected, setSelected] = useState<SearchDoc | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const searchResults = useMemo(() => searchIcons(searchQuery), [searchQuery]);
-  const filteredIcons = useMemo(
-    () => filterIconsByStyle(searchResults, iconStyle),
-    [iconStyle, searchResults]
+  const tiers = useMemo(() => searchIconTiers(searchQuery), [searchQuery]);
+  const semantic = useSemanticMatches(searchQuery);
+
+  // Exact and all-token hits first, then meaning, then typo distance. Semantic
+  // matches land below what the user literally typed, so arriving late never
+  // moves the cell they were about to click.
+  const filteredIcons = useMemo(() => {
+    const seen = new Set(tiers.strong.map((doc) => doc.slug));
+    const byMeaning = semantic.slugs.flatMap((slug) => {
+      const doc = docBySlug.get(slug);
+      if (!doc || seen.has(slug)) {
+        return [];
+      }
+      seen.add(slug);
+      return [doc];
+    });
+    const fuzzy = tiers.fuzzy.filter((doc) => !seen.has(doc.slug));
+    return filterIconsByStyle(
+      [...tiers.strong, ...byMeaning, ...fuzzy],
+      iconStyle
+    );
+  }, [iconStyle, semantic.slugs, tiers]);
+
+  const iconCount = useMemo(
+    () => filterIconsByStyle(getAllSearchDocs(), iconStyle).length,
+    [iconStyle]
   );
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -203,18 +265,10 @@ export const IconSearch = ({
 
   const visibleIcons = filteredIcons.slice(0, visibleCount);
 
-  const visibleSlugs = useMemo(() => {
-    const slugs = visibleIcons.map(
-      (doc) => resolveVariant(doc, iconStyle).slug
-    );
-    if (selected) {
-      const extra = resolveVariant(selected, iconStyle).slug;
-      if (!slugs.includes(extra)) {
-        slugs.push(extra);
-      }
-    }
-    return slugs;
-  }, [visibleIcons, iconStyle, selected]);
+  const visibleSlugs = useMemo(
+    () => visibleIcons.map((doc) => resolveVariant(doc, iconStyle).slug),
+    [visibleIcons, iconStyle]
+  );
 
   // Markup that has arrived so far. Seeded from the server payload, so the
   // opening screen paints from the document instead of waiting on the network.
@@ -316,10 +370,6 @@ export const IconSearch = ({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const selectedMarkup = selected
-    ? (markupBySlug.get(resolveVariant(selected, iconStyle).slug) ?? null)
-    : null;
-
   return (
     <>
       {/*
@@ -336,7 +386,7 @@ export const IconSearch = ({
               <MagnifyingGlassIcon className="absolute top-1/2 left-4 size-4 -translate-y-1/2" />
             }
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search icons by name..."
+            placeholder={`Search ${iconCount.toLocaleString("en-US")} icons by name...`}
             ref={searchRef}
             type="search"
             value={searchQuery}
@@ -355,11 +405,6 @@ export const IconSearch = ({
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <p className="hidden text-muted-foreground text-xs sm:block">
-              {iconStyle === "SOLID"
-                ? "Only icons with a filled variant."
-                : `Press / to search. ${filterIconsByStyle(getAllSearchDocs(), iconStyle).length.toLocaleString("en-US")} icons.`}
-            </p>
           </div>
         </div>
       </div>
@@ -374,25 +419,32 @@ export const IconSearch = ({
                 markupBySlug.get(resolveVariant(doc, iconStyle).slug) ?? null
               }
               onCopy={handleIconCopy}
-              onOpen={setSelected}
               style={iconStyle}
             />
           ))}
         </div>
+        {filteredIcons.length === 0 ? (
+          <p
+            aria-live="polite"
+            className="py-16 text-center text-muted-foreground text-sm"
+          >
+            {semantic.pending
+              ? "Looking for icons by meaning..."
+              : `No icons match "${searchQuery.trim()}".`}
+          </p>
+        ) : null}
         {visibleCount < filteredIcons.length ? (
           <div aria-hidden className="h-px w-full" ref={sentinelRef} />
         ) : null}
       </div>
-      {selected ? (
-        <IconDrawer
-          doc={selected}
-          markup={selectedMarkup}
-          onClose={() => setSelected(null)}
+      <Suspense fallback={null}>
+        <IconPanelFromUrl
+          markupBySlug={markupBySlug}
           onCopyName={(slug, name) => handleIconCopy(slug, name, "NAME")}
           onStyleChange={setIconStyle}
           style={iconStyle}
         />
-      ) : null}
+      </Suspense>
     </>
   );
 };

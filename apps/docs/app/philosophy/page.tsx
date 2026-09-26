@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { CodeBlock } from "@/components/code-block";
-import { asset, siteUrl } from "@/lib/config";
+import { asset, iconHref, siteUrl } from "@/lib/config";
 
 const description =
   "The house spec behind Blode Icons: a 24x24 grid, a 2px base stroke, named optical thinning tiers, cohorts that share a bounding box, and how to add an icon.";
@@ -290,18 +290,12 @@ export default function PhilosophyPage() {
           <Code>search</Code> finds{" "}
           <a
             className="text-foreground underline underline-offset-2"
-            href={asset("/magnifying-glass")}
+            href={iconHref("magnifying-glass")}
           >
             magnifying glass
           </a>
-          , and why{" "}
-          <a
-            className="text-foreground underline underline-offset-2"
-            href={asset("/categories")}
-          >
-            categories
-          </a>{" "}
-          exist for browsing what the set already covers.
+          . When the words do not match, a semantic pass finds icons by what
+          they mean rather than what they are called.
         </p>
       </Section>
 

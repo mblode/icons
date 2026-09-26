@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { asset } from "@/lib/config";
+import { ICON_PARAM } from "@/lib/config";
 import { copyIconContent } from "@/lib/conversion-events";
 import { downloadSvg } from "@/lib/icon-download";
-import { getIconDisplayName, preferredLucideAlias } from "@/lib/icon-search";
-import { loadIconSource } from "@/lib/icon-source";
+import { closeIconPanel } from "@/lib/icon-panel-url";
+import {
+  getAllSearchDocs,
+  getIconDisplayName,
+  preferredLucideAlias,
+} from "@/lib/icon-search";
+import { loadIconSource, loadIconSvgBatch } from "@/lib/icon-source";
 import type { IconStyle, SearchDoc } from "@/lib/icon-types";
-import ArrowDownWallIcon from "@/src/icons-tsx/arrow-down-wall";
+import ArrowInboxIcon from "@/src/icons-tsx/arrow-inbox";
 import CircleXIcon from "@/src/icons-tsx/circle-x";
 
 const ICON_SUFFIX_REGEX = /Icon$/;
@@ -112,13 +118,13 @@ export function IconDrawer({
     <>
       <button
         aria-label="Close icon details"
-        className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:opacity-0 motion-reduce:transition-none md:hidden"
         onClick={onClose}
         type="button"
       />
       <aside
         aria-labelledby="icon-drawer-title"
-        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border border-border bg-background p-5 shadow-lg md:inset-y-auto md:top-20 md:right-4 md:bottom-4 md:left-auto md:max-h-none md:w-[440px] md:rounded-2xl"
+        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border border-border bg-background p-5 shadow-lg transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:translate-y-full motion-reduce:transition-none md:inset-y-auto md:top-20 md:right-4 md:bottom-4 md:left-auto md:max-h-none md:w-[440px] md:rounded-2xl md:starting:translate-x-6 md:starting:translate-y-0 md:starting:opacity-0"
         role="dialog"
       >
         <div className="flex items-start justify-between gap-3">
@@ -187,7 +193,7 @@ export function IconDrawer({
             size="sm"
             variant="outline"
           >
-            <ArrowDownWallIcon aria-hidden="true" />
+            <ArrowInboxIcon aria-hidden="true" />
             Download
           </Button>
         </div>
@@ -211,14 +217,82 @@ export function IconDrawer({
             <span className="font-mono text-foreground">{alias}</span>
           </p>
         ) : null}
-
-        <a
-          className="text-sm underline-offset-2 hover:underline"
-          href={asset(`/${doc.slug}`)}
-        >
-          Open full page
-        </a>
       </aside>
     </>
+  );
+}
+
+const docBySlug = new Map(getAllSearchDocs().map((doc) => [doc.slug, doc]));
+
+/**
+ * The panel for whatever `?icon=` names.
+ *
+ * Its own component so `useSearchParams` stays inside a small Suspense
+ * boundary: read in the grid, it would pull the whole grid out of the
+ * prerendered shell. A pasted link to a filled variant (`?icon=x-filled`)
+ * opens the base icon with the Filled tab selected.
+ */
+export function IconPanelFromUrl({
+  markupBySlug,
+  onCopyName,
+  onStyleChange,
+  style,
+}: {
+  markupBySlug: Map<string, string>;
+  onCopyName: (slug: string, name: string) => void;
+  onStyleChange: (style: IconStyle) => void;
+  style: IconStyle;
+}) {
+  const param = useSearchParams().get(ICON_PARAM);
+  const filledLink = param?.endsWith("-filled") ?? false;
+  const doc = param
+    ? (docBySlug.get(param) ??
+      (filledLink ? docBySlug.get(param.slice(0, -"-filled".length)) : null))
+    : null;
+
+  useEffect(() => {
+    if (doc && filledLink && doc.hasFilled) {
+      onStyleChange("SOLID");
+    }
+  }, [doc, filledLink, onStyleChange]);
+
+  const slug = doc ? resolveVariant(doc, style).slug : null;
+  const cached = slug ? (markupBySlug.get(slug) ?? null) : null;
+
+  // A pasted link can name an icon far below the first batch, so the grid has
+  // not fetched its markup. Fetch just that one.
+  const [fetched, setFetched] = useState<{ slug: string; markup: string }>();
+  useEffect(() => {
+    if (!slug || cached) {
+      return;
+    }
+    let active = true;
+    loadIconSvgBatch([slug])
+      .then((batch) => {
+        if (active && batch[slug]) {
+          setFetched({ markup: batch[slug], slug });
+        }
+      })
+      .catch(() => {
+        // The panel keeps its placeholder; the actions still work by slug.
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug, cached]);
+
+  if (!doc) {
+    return null;
+  }
+
+  return (
+    <IconDrawer
+      doc={doc}
+      markup={cached ?? (fetched?.slug === slug ? fetched.markup : null)}
+      onClose={closeIconPanel}
+      onCopyName={onCopyName}
+      onStyleChange={onStyleChange}
+      style={style}
+    />
   );
 }

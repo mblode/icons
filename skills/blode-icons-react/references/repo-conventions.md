@@ -14,8 +14,8 @@ npm install
 npm run build
 npm run dev
 npm run lint
-npm run check
-npm run fix
+npm run lint
+npm run format
 npm run check:types
 ```
 
@@ -27,6 +27,6 @@ npm run check:types
 
 ## Implementation Notes
 
-- `packages/blode-icons-react/scripts/build.mjs` generates support files, icon components, aliases, and `dynamicIconImports`
+- `packages/blode-icons-react/scripts/build.mts` generates support files, icon components, aliases, and `dynamicIconImports`
 - Public package guidance should be based on exports and generated output, not private `src/*` paths
 - The install page at `apps/docs/app/installation/page.tsx` renders `apps/docs/components/getting-started.tsx`, which is where the live install and usage snippets actually come from

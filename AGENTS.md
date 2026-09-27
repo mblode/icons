@@ -46,7 +46,7 @@ npx tsx ../iconsmith-internal/packages/iconsmith/src/cli.ts lint \
 ## Gotchas
 
 - IMPORTANT: `npm run release` only builds `blode-icons-react` (`--filter=blode-icons-react`), not the docs app.
-- `npm run build`, `check:types` and `dev` rewrite about 1,870 tracked files under `apps/docs/src/icons-tsx/`: they are generated copies of the package's `src/`, listed in `.gitignore` but still tracked, and the copies are unformatted. Unless the change adds or edits icons, run `git checkout -- apps/docs/src` before committing.
+- `npm run build`, `check:types` and `dev` regenerate `apps/docs/src/icons-tsx/`, `icons-svg/`, `icons-data/`, `icons-metadata.json` and `icons-search-index.json` from the package's `src/` via `scripts/copy-icons.mjs`. These are untracked and gitignored, so a clean build leaves `git status` empty; don't commit them.
 - In a git worktree, turbo reuses the main checkout's local cache. If `check:types` reports `Cannot find module 'blode-icons-react'`, a cache hit restored the package without `dist/`; run `npx turbo run build --filter=blode-icons-react --force`.
 - `apps/docs/AGENTS.md` is the Next.js agent-rules block that `next dev` rewrites on start. Leave it as Next writes it.
 

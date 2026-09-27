@@ -71,12 +71,12 @@
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@svgr/plugin-svgo": "^8.1.0",
-    "@types/react": "^19.2.17",
-    "lucide-static": "^1.31.0",
+    "@types/react": "^19.3.0",
+    "lucide-static": "^1.48.0",
     "sharp": "^0.35.4",
     "svgo": "^4.1.0",
     "typescript": "6.0.3",
-    "ultracite": "7.9.3"
+    "ultracite": "7.12.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

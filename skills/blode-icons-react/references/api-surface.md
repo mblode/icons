@@ -19,7 +19,7 @@
 When validating or changing the API, inspect these files first:
 
 - `packages/blode-icons-react/package.json` for exported subpaths
-- `packages/blode-icons-react/scripts/build.mjs` for generated wrappers and dynamic import behavior
+- `packages/blode-icons-react/scripts/build.mts` for generated wrappers and dynamic import behavior
 - `packages/blode-icons-react/src/all-icons.ts` or `packages/blode-icons-react/dist/all-icons.d.ts` for actual root exports
 - `packages/blode-icons-react/dist/dynamicIconImports.js` for real dynamic keys
 

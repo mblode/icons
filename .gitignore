@@ -51,6 +51,7 @@ apps/docs/src/icons-tsx/
 apps/docs/src/icons-svg/
 apps/docs/src/icons-data/
 apps/docs/src/icons-metadata.json
+apps/docs/src/icons-search-index.json
 
 # Build cache
 .cache-manifest.json

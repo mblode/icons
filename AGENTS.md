@@ -22,8 +22,7 @@ Run from the repo root.
 
 ## Verification
 
-- A change is proven by the sequence CI runs, all passing on 27 Sep 2026 (4357 SVGs, 2221 metadata files, docs build):
-  `npm run lint && npm run check:types && npm run validate --workspace blode-icons-react && npm run validate:icons-data --workspace blode-icons-react && npm run build`
+- A change is proven by the sequence CI runs, all passing on 27 Sep 2026 (4357 SVGs, 2221 metadata files, docs build): `npm run lint && npm run check:types && npm run validate --workspace blode-icons-react && npm run validate:icons-data --workspace blode-icons-react && npm run build`
 - There are no unit or browser tests. For a docs UI change, open the `npm run dev` URL and check it by hand.
 - Shape or cohort changes: run the cohort lint below. It is a measurement, not a gate.
 - Gaps: no `verify` script (the CI sequence above is the de facto one), no `doctor` script (one would check Node 24 and the `../iconsmith-internal` checkout) and no feature map.

@@ -5,6 +5,13 @@ SVG icon library with a React component package. Turborepo monorepo, Node 24.
 - `packages/blode-icons-react`: React icon components, generated from `icons-svg/` and published to npm
 - `apps/docs`: the docs site, served at `blode.co/icons`
 
+## Nested AGENTS.md
+
+- `packages/blode-icons-react/AGENTS.md`: package commands and import boundary
+- `apps/docs/AGENTS.md`: Next.js agent-rules block only, rewritten by `next dev`
+
+Codex reads AGENTS.md files only from the repo root down to its working directory, not the whole tree. Read the package's own AGENTS.md first when editing inside it.
+
 ## Commands
 
 Run from the repo root.

@@ -20,12 +20,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
-    "lefthook": "^2.1.10",
-    "oxfmt": "^0.58.0",
-    "oxlint": "^1.73.0",
-    "portless": "^0.15.4",
+    "lefthook": "^2.1.14",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "portless": "^0.15.6",
     "turbo": "^2",
-    "ultracite": "7.9.3"
+    "ultracite": "7.12.0"
   },
   "engines": {
     "node": ">=24"

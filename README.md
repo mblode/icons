@@ -10,8 +10,8 @@ Import one icon by name, or load any of them on demand at runtime.
   <a href="https://www.npmjs.com/package/blode-icons-react">
     <img src="https://img.shields.io/npm/v/blode-icons-react?style=flat&colorA=000000&colorB=000000" />
   </a>
-  <a href="https://github.com/mblode/blode-icons/blob/main/LICENSE.md">
-    <img src="https://img.shields.io/github/license/mblode/blode-icons?style=flat&colorA=000000&colorB=000000" />
+  <a href="https://github.com/mblode/icons/blob/main/LICENSE.md">
+    <img src="https://img.shields.io/github/license/mblode/icons?style=flat&colorA=000000&colorB=000000" />
   </a>
 </p>
 

@@ -3,7 +3,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/blode-icons-react"><img alt="npm version" src="https://img.shields.io/npm/v/blode-icons-react"></a>
-  <a href="https://github.com/mblode/blode-icons/blob/main/LICENSE.md"><img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="https://github.com/mblode/icons/blob/main/LICENSE.md"><img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
 ## Highlights
@@ -19,7 +19,7 @@ Blode is its own icon set rather than a Lucide clone, so it is not a full drop-i
 ## Install
 
 ```bash
-npx skills add mblode/blode-icons -g --all -y
+npx skills add mblode/icons -g --all -y
 ```
 
 ```bash
@@ -79,4 +79,4 @@ All icons accept standard SVG attributes plus:
 
 ## License
 
-[MIT](https://github.com/mblode/blode-icons/blob/main/LICENSE.md)
+[MIT](https://github.com/mblode/icons/blob/main/LICENSE.md)

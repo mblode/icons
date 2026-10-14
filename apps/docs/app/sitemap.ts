@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
 
 import { siteUrl } from "@/lib/config";
-import { getIconCategories } from "@/lib/icon-categories";
-import { getAllSearchDocs } from "@/lib/icon-search";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Prerendered, so this cannot read the clock. `BUILD_DATE` is stamped in
@@ -33,29 +31,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       lastModified,
       priority: 0.7,
-      url: `${siteUrl}/categories`,
-    },
-    {
-      changeFrequency: "weekly",
-      lastModified,
-      priority: 0.7,
       url: `${siteUrl}/concepts`,
     },
-    ...getIconCategories().map((category) => ({
-      changeFrequency: "weekly" as const,
-      lastModified,
-      priority: 0.6,
-      url: `${siteUrl}/categories/${category.slug}`,
-    })),
-    // Every icon detail page. 2,139 of them, well inside the 50,000-URL limit,
-    // and they are the long-tail search surface: without them the whole set is
-    // one indexable page whose contents only exist after JavaScript runs.
-    ...getAllSearchDocs().map((doc) => ({
-      changeFrequency: "monthly" as const,
-      lastModified,
-      priority: 0.5,
-      url: `${siteUrl}/${doc.slug}`,
-    })),
+    // No icon URLs. An icon is a panel over the grid (`?icon=slug`), and
+    // the old `/{slug}` pages now 308 there; listing either would hand
+    // crawlers 2,000 redirects or 2,000 variants of the root.
     // No `/llms.txt` here. A sitemap lists indexable HTML pages, and that route
     // is plain text: no title, no canonical, no description, no OG. Listing it
     // only gave crawlers a page-shaped thing that fails every page check.

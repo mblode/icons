@@ -63,6 +63,7 @@ async function capturePostHog(event: AgentStatEvent) {
         properties: {
           ...event,
           $lib: "blode-icons-agent-stats",
+          project: "icons",
         },
         timestamp: new Date(event.ts).toISOString(),
       }),

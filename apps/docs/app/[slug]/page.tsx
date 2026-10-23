@@ -1,6 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
 
-import { ICON_PARAM } from "@/lib/config";
+import { iconHref, siteUrl } from "@/lib/config";
 import { getAllIconSlugs, getIconDoc } from "@/lib/icon-detail";
 
 /**
@@ -27,9 +27,9 @@ export default async function IconRedirect({
   if (!getIconDoc(slug)) {
     notFound();
   }
-  // `redirect` prepends basePath, so this lands on `/icons/?icon=` and Next's
-  // trailing-slash redirect takes it the last hop. Neither shorter form works:
-  // a bare `?icon=` resolves against this URL and loops, and `/icons?icon=`
-  // gets basePath prepended twice.
-  permanentRedirect(`/?${ICON_PARAM}=${encodeURIComponent(slug)}`);
+  // Absolute, because `redirect` prepends basePath to any path starting with
+  // `/`: `/?icon=` becomes `/icons/?icon=` and costs a trailing-slash hop,
+  // and `/icons?icon=` becomes `/icons/icons?icon=`. A bare `?icon=` resolves
+  // against this URL and loops. A full URL is left alone, so this is one hop.
+  permanentRedirect(new URL(iconHref(slug), siteUrl).href);
 }

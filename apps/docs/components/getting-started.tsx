@@ -54,13 +54,13 @@ function Step({
     <div className="grid gap-3 sm:grid-cols-[2rem_1fr]">
       <div
         aria-hidden="true"
-        className="flex size-8 items-center justify-center rounded-full bg-muted font-medium text-sm"
+        className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-medium"
       >
         {n}
       </div>
       <div className="min-w-0">
-        <h2 className="font-medium text-base">{title}</h2>
-        <div className="mt-2 space-y-3 text-muted-foreground text-sm leading-relaxed">
+        <h2 className="text-base font-medium">{title}</h2>
+        <div className="mt-2 space-y-3 text-sm leading-relaxed text-muted-foreground">
           {children}
         </div>
       </div>
@@ -74,8 +74,8 @@ export function GettingStarted() {
       <div className="rounded-2xl border bg-background p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="font-semibold text-xl tracking-tight">Install</h1>
-            <p className="mt-1 text-muted-foreground text-sm">
+            <h1 className="text-xl font-semibold tracking-tight">Install</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               MIT-licensed React icons. Lucide-compatible names and props.
             </p>
           </div>

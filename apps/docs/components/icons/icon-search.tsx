@@ -115,7 +115,7 @@ const IconCell = ({
           prefetching every visible one is a request storm.
         */}
         <a
-          className="absolute inset-0 flex items-center justify-center rounded-xl px-2 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+          className="absolute inset-0 flex items-center justify-center rounded-xl px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           href={iconHref(doc.slug)}
           onClick={(event) => {
             if (
@@ -188,11 +188,44 @@ const IconCell = ({
         </div>
       </div>
 
-      <span className="mt-2 line-clamp-2 text-center text-muted-foreground text-xs">
+      <span className="mt-2 line-clamp-2 text-center text-xs text-muted-foreground">
         {displayName}
       </span>
     </div>
   );
+};
+
+const handleIconCopy = async (
+  slug: string,
+  name: string,
+  copyKind: IconCopyKind
+) => {
+  // The fetch is started but deliberately not awaited: handing the pending
+  // promise straight to the clipboard keeps the write inside the tap that
+  // asked for it, which is the only thing Safari accepts.
+  const source =
+    copyKind === "NAME"
+      ? name
+      : loadIconSource({ copyKind, iconName: slug }).then((value) => {
+          if (!value) {
+            throw new Error(`No ${copyKind} source for ${slug}`);
+          }
+          return value;
+        });
+
+  try {
+    await copyIconContent(
+      source,
+      `copy-${copyKind.toLowerCase()}`,
+      "icon-search",
+      slug
+    );
+    toast(
+      `"${getIconDisplayName(name)}" ${COPY_KIND_LABEL[copyKind]} copied to clipboard`
+    );
+  } catch {
+    toast.error(`Failed to copy ${name}`);
+  }
 };
 
 export const IconSearch = ({
@@ -240,6 +273,7 @@ export const IconSearch = ({
   // the query and style inputs, not the derived list.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- the inputs are the trigger
   }, [searchQuery, iconStyle]);
 
   // Reveal the next batch as the sentinel approaches the viewport.
@@ -315,39 +349,6 @@ export const IconSearch = ({
       active = false;
     };
   }, [visibleSlugs]);
-
-  const handleIconCopy = async (
-    slug: string,
-    name: string,
-    copyKind: IconCopyKind
-  ) => {
-    // The fetch is started but deliberately not awaited: handing the pending
-    // promise straight to the clipboard keeps the write inside the tap that
-    // asked for it, which is the only thing Safari accepts.
-    const source =
-      copyKind === "NAME"
-        ? name
-        : loadIconSource({ copyKind, iconName: slug }).then((value) => {
-            if (!value) {
-              throw new Error(`No ${copyKind} source for ${slug}`);
-            }
-            return value;
-          });
-
-    try {
-      await copyIconContent(
-        source,
-        `copy-${copyKind.toLowerCase()}`,
-        "icon-search",
-        slug
-      );
-      toast(
-        `"${getIconDisplayName(name)}" ${COPY_KIND_LABEL[copyKind]} copied to clipboard`
-      );
-    } catch {
-      toast.error(`Failed to copy ${name}`);
-    }
-  };
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -440,7 +441,7 @@ export const IconSearch = ({
         {filteredIcons.length === 0 ? (
           <p
             aria-live="polite"
-            className="py-16 text-center text-muted-foreground text-sm"
+            className="py-16 text-center text-sm text-muted-foreground"
           >
             {semantic.pending
               ? "Looking for icons by meaning..."

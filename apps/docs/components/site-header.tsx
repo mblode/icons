@@ -23,7 +23,7 @@ export function SiteHeader() {
         `next/link`. Without `basePath`/`asset()` these escape the /icons zone
         and hit blode.co itself — `/installation` there is a 404.
       */}
-      <a className="font-medium text-lg tracking-tight" href={basePath}>
+      <a className="text-lg font-medium tracking-tight" href={basePath}>
         Blode Icons
       </a>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -57,7 +57,7 @@ export function SiteHeader() {
           </a>
         </nav>
         <a
-          className="hidden text-muted-foreground text-sm underline-offset-2 hover:text-foreground hover:underline md:inline"
+          className="hidden text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline md:inline"
           href={siteConfig.links.github}
           rel="noopener noreferrer"
           target="_blank"

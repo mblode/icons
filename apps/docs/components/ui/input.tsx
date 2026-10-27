@@ -51,7 +51,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="w-full">
         <input
           className={cn(
-            "input flex h-[52px] w-full rounded-2xl border border-input bg-card px-4 py-[14px] font-normal font-sans text-base text-foreground leading-snug shadow-input transition-colors placeholder:text-placeholder-foreground hover:border-input-hover focus:border-ring focus:outline-hidden focus:ring-2 focus:ring-ring/15 focus:ring-offset-1 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+            "input placeholder:text-placeholder-foreground hover:border-input-hover flex h-[52px] w-full rounded-2xl border border-input bg-card px-4 py-[14px] font-sans text-base leading-snug font-normal text-foreground shadow-input transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15 focus:ring-offset-1 focus:ring-offset-background focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
             {
               "border-destructive-foreground": hasError,
               "hover:border-input! focus:border-input!": props.readOnly,

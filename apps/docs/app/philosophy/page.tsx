@@ -66,8 +66,8 @@ const Section = ({
   title: string;
 }) => (
   <section className="mt-12 scroll-mt-8" id={id}>
-    <h2 className="font-semibold text-lg tracking-tight">{heading}</h2>
-    <div className="mt-3 space-y-4 text-muted-foreground text-sm leading-relaxed">
+    <h2 className="text-lg font-semibold tracking-tight">{heading}</h2>
+    <div className="mt-3 space-y-4 text-sm leading-relaxed text-muted-foreground">
       {children}
     </div>
   </section>
@@ -143,10 +143,10 @@ const UNREACHED: { count: string; reason: ReactNode; what: string }[] = [
 export default function PhilosophyPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="font-semibold text-2xl tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         How these icons are drawn
       </h1>
-      <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         An icon set is a vocabulary, and a vocabulary only works if every word
         is spelled the same way. What follows is the house spec: the facts about
         the art that the code depends on, written down so an adjustment can be
@@ -182,14 +182,14 @@ export default function PhilosophyPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-border border-b">
+              <tr className="border-b border-border">
                 <th className="py-2 pr-4 font-medium text-foreground">Tier</th>
                 <th className="py-2 font-medium text-foreground">Use</th>
               </tr>
             </thead>
             <tbody>
               {TIERS.map((row) => (
-                <tr className="border-border border-b" key={row.tier}>
+                <tr className="border-b border-border" key={row.tier}>
                   <td className="py-2 pr-4 align-top">
                     <Code>{row.tier}</Code>
                   </td>
@@ -221,7 +221,7 @@ export default function PhilosophyPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-border border-b">
+              <tr className="border-b border-border">
                 <th className="py-2 pr-4 font-medium text-foreground">Count</th>
                 <th className="py-2 pr-4 font-medium text-foreground">What</th>
                 <th className="py-2 font-medium text-foreground">Why</th>
@@ -229,7 +229,7 @@ export default function PhilosophyPage() {
             </thead>
             <tbody>
               {UNREACHED.map((row) => (
-                <tr className="border-border border-b" key={row.what}>
+                <tr className="border-b border-border" key={row.what}>
                   <td className="py-2 pr-4 align-top tabular-nums">
                     {row.count}
                   </td>

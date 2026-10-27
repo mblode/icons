@@ -1,7 +1,7 @@
 import { asset, siteConfig } from "@/lib/config";
 
 export const SiteFooter = () => (
-  <footer className="flex flex-col items-center justify-center gap-2 pt-16 pb-8 text-muted-foreground text-sm">
+  <footer className="flex flex-col items-center justify-center gap-2 pt-16 pb-8 text-sm text-muted-foreground">
     {/*
       blode.co and blode.co/projects are this same origin behind a rewrite, so
       both are internal links: same tab, and no rel="noopener noreferrer", which

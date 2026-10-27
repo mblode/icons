@@ -13,7 +13,7 @@ const PACKAGE_MANAGERS = [
 export const InstallTabs = () => (
   <div className="group relative overflow-hidden rounded-xl bg-code text-code-foreground">
     <Tabs className="gap-0" defaultValue="npm">
-      <div className="flex items-center gap-2 border-border/50 border-b px-3 py-1">
+      <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1">
         <TabsList className="rounded-none bg-transparent p-0">
           {PACKAGE_MANAGERS.map((pm) => (
             <TabsTrigger

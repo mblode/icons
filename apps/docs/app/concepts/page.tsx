@@ -41,8 +41,8 @@ export default async function ConceptsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="font-semibold text-2xl tracking-tight">Concepts</h1>
-      <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+      <h1 className="text-2xl font-semibold tracking-tight">Concepts</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         Tags are many-to-many, and they collide: <code>brand</code> reaches 72
         icons, <code>ai</code> reaches 51. That is the right shape for search
         and the wrong shape for a decision. The concepts table is the other
@@ -52,9 +52,9 @@ export default async function ConceptsPage() {
       </p>
 
       {present ? null : (
-        <div className="mt-8 rounded-2xl border border-border border-dashed p-5">
-          <h2 className="font-medium text-sm">Not published yet</h2>
-          <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+        <div className="mt-8 rounded-2xl border border-dashed border-border p-5">
+          <h2 className="text-sm font-medium">Not published yet</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             <code>icons-data/_concepts.json</code> is not in this build. The
             page ships with an empty table rather than a broken route, and fills
             in on the next deploy after the file lands. Until then, search is
@@ -73,31 +73,31 @@ export default async function ConceptsPage() {
 
       {concepts.length > 0 ? (
         <>
-          <p className="mt-8 text-muted-foreground text-sm">
+          <p className="mt-8 text-sm text-muted-foreground">
             {concepts.length} concepts.
           </p>
-          <ul className="mt-3 border-border border-t">
+          <ul className="mt-3 border-t border-border">
             {concepts.map((entry) => (
               <li
-                className="border-border border-b"
+                className="border-b border-border"
                 key={`${entry.concept}:${entry.slug}`}
               >
                 <a
-                  className="flex items-center gap-4 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+                  className="flex items-center gap-4 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   href={iconHref(entry.slug)}
                 >
                   <IconGlyph markup={markupBySlug[entry.slug] ?? null} />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium text-sm">
+                    <span className="block text-sm font-medium">
                       {entry.concept}
                     </span>
                     {entry.note ? (
-                      <span className="block text-muted-foreground text-xs">
+                      <span className="block text-xs text-muted-foreground">
                         {entry.note}
                       </span>
                     ) : null}
                   </span>
-                  <span className="shrink-0 text-muted-foreground text-sm">
+                  <span className="shrink-0 text-sm text-muted-foreground">
                     {getIconDisplayName(entry.slug)}
                   </span>
                 </a>
@@ -108,7 +108,7 @@ export default async function ConceptsPage() {
       ) : null}
 
       {unresolved.length > 0 ? (
-        <p className="mt-6 text-muted-foreground text-xs">
+        <p className="mt-6 text-xs text-muted-foreground">
           {unresolved.length}{" "}
           {unresolved.length === 1 ? "concept points" : "concepts point"} at a
           slug with no icon and {unresolved.length === 1 ? "is" : "are"} not

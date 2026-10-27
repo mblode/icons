@@ -76,7 +76,7 @@
     "sharp": "^0.35.5",
     "svgo": "^4.1.0",
     "typescript": "6.0.3",
-    "ultracite": "7.9.3"
+    "ultracite": "8.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

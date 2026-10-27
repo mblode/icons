@@ -5,6 +5,8 @@ import react from "ultracite/oxlint/react";
 
 export default defineConfig({
   extends: [core, react, next],
+  // Oxlint does not carry `env` through `extends`, so repeat core's globals.
+  env: core.env,
   // Icon sources are generated from SVGs by the build; linting the thousands
   // of emitted files (and the copied JSON data/search index in the docs app)
   // is pure noise.
@@ -27,8 +29,10 @@ export default defineConfig({
   // safe autofix, so they're deferred rather than churned as part of a
   // dependency upgrade. Every other Ultracite rule stays enforced.
   rules: {
-    // shadcn-style components assign arrow functions to consts.
+    // shadcn-style components assign arrow functions to consts, while pages
+    // and older components use function declarations; neither style is enforced.
     "func-style": "off",
+    "react/function-component-definition": "off",
     // cva variant maps and option objects read better in their authored order.
     "sort-keys": "off",
     // Build scripts and legacy components use plain regexes / index counters.
@@ -58,7 +62,8 @@ export default defineConfig({
     "typescript/no-dynamic-delete": "off",
     // Deferred component-quality items (effect setState, raw <img>/<a>,
     // shiki's dangerouslySetInnerHTML, an image role) kept out of scope.
-    "react/react-compiler": "off",
+    // set-state-in-effect replaced react/react-compiler, removed in oxlint 1.89.
+    "react/set-state-in-effect": "off",
     "react/no-danger": "off",
     "nextjs/no-html-link-for-pages": "off",
     "nextjs/no-img-element": "off",

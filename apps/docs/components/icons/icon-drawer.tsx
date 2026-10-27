@@ -79,12 +79,12 @@ function Snippet({
   return (
     <div>
       <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
         <Button onClick={onCopy} size="xs" variant="ghost">
           <CopyLabel copied={copied}>Copy</CopyLabel>
         </Button>
       </div>
-      <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-xl bg-muted/50 p-3 font-mono text-xs">
+      <pre className="overflow-x-auto rounded-xl bg-muted/50 p-3 font-mono text-xs break-all whitespace-pre-wrap">
         {value}
       </pre>
     </div>
@@ -173,21 +173,21 @@ export function IconDrawer({
     <>
       <button
         aria-label="Close icon details"
-        className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:opacity-0 motion-reduce:transition-none md:hidden"
+        className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none md:hidden starting:opacity-0"
         onClick={onClose}
         type="button"
       />
       <aside
         aria-labelledby="icon-drawer-title"
-        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border border-border bg-background p-5 shadow-lg transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:translate-y-full motion-reduce:transition-none md:inset-y-auto md:top-20 md:right-4 md:bottom-4 md:left-auto md:max-h-none md:w-[440px] md:rounded-2xl md:starting:translate-x-6 md:starting:translate-y-0 md:starting:opacity-0"
+        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border border-border bg-background p-5 shadow-lg transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none md:inset-y-auto md:top-20 md:right-4 md:bottom-4 md:left-auto md:max-h-none md:w-[440px] md:rounded-2xl starting:translate-y-full md:starting:translate-x-6 md:starting:translate-y-0 md:starting:opacity-0"
         role="dialog"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-medium text-lg" id="icon-drawer-title">
+            <h2 className="text-lg font-medium" id="icon-drawer-title">
               {displayName}
             </h2>
-            <p className="mt-1 font-mono text-muted-foreground text-xs">
+            <p className="mt-1 font-mono text-xs text-muted-foreground">
               {name}
             </p>
           </div>
@@ -269,7 +269,7 @@ export function IconDrawer({
         </div>
 
         {alias ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             Lucide alias:{" "}
             <span className="font-mono text-foreground">{alias}</span>
           </p>
@@ -323,6 +323,7 @@ export function IconPanelFromUrl({
     }
     let active = true;
     loadIconSvgBatch([slug])
+      // oxlint-disable-next-line promise/always-return -- the callback only sets state
       .then((batch) => {
         if (active && batch[slug]) {
           setFetched({ markup: batch[slug], slug });

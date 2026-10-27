@@ -1,15 +1,22 @@
 import type { CaptureResult } from "posthog-js";
 import posthog from "posthog-js";
 
-const isLocalHost = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-  const host = window.location.hostname;
-  return (
-    host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost")
-  );
-};
+import { siteUrl } from "@/lib/config";
+
+// Only the public host reports. Localhost, branch previews and `*.vercel.app`
+// aliases run this same bundle and would land in the shared blode.co project.
+const isProductionHost = () =>
+  window.location.hostname === new URL(siteUrl).hostname;
+
+// Lighthouse's default mobile emulation UA. Real Chrome on Android has sent the
+// reduced `Android 10; K` since Chrome 110, so a device model here means an
+// emulated run. From Google IPs it rendered every `/icons?icon=` URL once,
+// 3,598 of 3,860 `/icons` pageviews in the 30 days to 2026-10-27. posthog-js
+// drops `navigator.webdriver` and `HeadlessChrome` events itself but still
+// loads; checking here skips init entirely.
+const isAutomatedBrowser = () =>
+  navigator.webdriver ||
+  navigator.userAgent.includes("Android 11; moto g power (2022)");
 
 const EXTENSION_EXCEPTION_MARKERS = [
   "runtime.sendMessage",
@@ -71,7 +78,11 @@ const isNoisyException = (event: CaptureResult): boolean => {
   });
 };
 
-if (!isLocalHost()) {
+if (
+  typeof window !== "undefined" &&
+  isProductionHost() &&
+  !isAutomatedBrowser()
+) {
   posthog.init("phc_yYatHXysbRxjTyfmyCKSUyMSQpgepJPuxegz2HtpfX35", {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     before_send: (event) => {

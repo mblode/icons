@@ -143,9 +143,10 @@ const trace = (svg: string): Traced[] =>
         closed: sp.closed,
         fp,
         sp,
-        poly: fp.norm.map(
-          ([x, y]): Point => [x * fp.size + cx, y * fp.size + cy]
-        ),
+        poly: fp.norm.map(([x, y]): Point => [
+          x * fp.size + cx,
+          y * fp.size + cy,
+        ]),
       };
     })
   );

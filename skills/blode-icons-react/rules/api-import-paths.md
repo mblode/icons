@@ -11,8 +11,8 @@ tags: imports, exports, package-surface
 **Incorrect (private paths and wrong module shapes):**
 
 ```tsx
-import { AirplaneIcon } from "blode-icons-react/icons/airplane";
 import { SearchIcon } from "blode-icons-react/dist/all-icons";
+import { AirplaneIcon } from "blode-icons-react/icons/airplane";
 import { DynamicIcon } from "blode-icons-react/src/dynamic";
 ```
 
@@ -20,9 +20,9 @@ import { DynamicIcon } from "blode-icons-react/src/dynamic";
 
 ```tsx
 import { SearchIcon, type LucideProps } from "blode-icons-react";
-import AirplaneIcon from "blode-icons-react/icons/airplane";
 import { DynamicIcon } from "blode-icons-react/dynamic";
 import dynamicIconImports from "blode-icons-react/dynamicIconImports";
+import AirplaneIcon from "blode-icons-react/icons/airplane";
 ```
 
 Use these import rules:

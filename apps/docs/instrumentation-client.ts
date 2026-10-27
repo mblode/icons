@@ -1,5 +1,5 @@
 import type { CaptureResult } from "posthog-js";
-import posthog from "posthog-js";
+import { posthog } from "posthog-js";
 
 import { siteUrl } from "@/lib/config";
 

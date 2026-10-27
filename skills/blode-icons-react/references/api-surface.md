@@ -27,7 +27,7 @@ When validating or changing the API, inspect these files first:
 
 ```tsx
 import { SearchIcon, type LucideProps } from "blode-icons-react";
-import AirplaneIcon from "blode-icons-react/icons/airplane";
 import { DynamicIcon } from "blode-icons-react/dynamic";
 import dynamicIconImports from "blode-icons-react/dynamicIconImports";
+import AirplaneIcon from "blode-icons-react/icons/airplane";
 ```

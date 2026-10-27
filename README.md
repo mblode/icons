@@ -52,12 +52,10 @@ export function Disclosure() {
 ```tsx
 // The whole library, every name carrying an Icon suffix
 import { ChevronDownIcon, SparkleIcon } from "blode-icons-react";
-
-// A single icon, for the tightest bundle
-import ChevronDownIcon from "blode-icons-react/icons/chevron-down";
-
 // Any icon by name, code-split and loaded on demand
 import { DynamicIcon } from "blode-icons-react/dynamic";
+// A single icon, for the tightest bundle
+import ChevronDownIcon from "blode-icons-react/icons/chevron-down";
 
 <DynamicIcon name="SearchIcon" size={24} />;
 ```

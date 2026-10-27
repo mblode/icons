@@ -47,6 +47,11 @@ function inferClient(userAgent: string | null | undefined) {
 }
 
 async function capturePostHog(event: AgentStatEvent) {
+  // Only the production deploy reports, as in the browser; local dev runs this too.
+  if (process.env.VERCEL_ENV !== "production") {
+    return;
+  }
+
   const apiKey =
     process.env.NEXT_PUBLIC_POSTHOG_KEY ??
     process.env.POSTHOG_KEY ??
